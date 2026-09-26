@@ -1,0 +1,10 @@
+{
+  "name": "quiz-and-examination-system",
+  "version": "1.0.0",
+  "description": "Root package manager",
+  "scripts": {
+    "start": "npm start --prefix backend-imperative",
+    "dev": "npm run dev --prefix backend-imperative",
+    "install-all": "npm install --prefix backend-imperative"
+  }
+}
