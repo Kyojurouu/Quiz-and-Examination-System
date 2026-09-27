@@ -14,9 +14,13 @@
     event.preventDefault();
     const name = UI.qs("#name").value.trim();
     const block = UI.qs("#block").value.trim();
-    UI.qs("#name-field").classList.toggle("has-error", !name);
-    UI.qs("#block-field").classList.toggle("has-error", !block);
-    if (!name || !block) return;
+    const validName = /^[\p{L} ]+$/u.test(name);
+    const validBlock = block === "COM232";
+    const nameField = UI.qs("#name-field");
+    const blockField = UI.qs("#block-field");
+    nameField.classList.toggle("has-error", !validName);
+    blockField.classList.toggle("has-error", !validBlock);
+    if (!validName || !validBlock) return;
 
     const submitBtn = UI.qs("#login-form button[type=submit]");
     submitBtn.disabled = true;
