@@ -15,6 +15,9 @@ const { Predicate, Rule, LogicVariable } = require("./logicEngine");
  *      submitted_answer(Student, Question, Given),
  *      correct_answer(Question, Actual),
  *      diff(Given, Actual).
+ *
+ * 3. Completion Horn Clause:
+ *    is_completed(Student) :- submitted_exam(Student).
  */
 
 function setupEvaluationRules(kb) {
@@ -31,6 +34,12 @@ function setupEvaluationRules(kb) {
       new Predicate("submitted_answer", [S, Q, C]),
       new Predicate("correct_answer", [Q, C])
     ]
+  );
+
+  // Rule 3: Completion Horn Clause
+  kb.assertRule(
+    new Predicate("is_completed", [S]),
+    [new Predicate("submitted_exam", [S])]
   );
 
   // Rule 2: Incorrectness Horn Clause
@@ -84,6 +93,10 @@ function deduceEvaluation(kb, studentId, questions) {
     });
   });
 
+  // Goal 3: Prove that this student's validated exam was submitted.
+  // ?- is_completed(studentId).
+  const completionProofs = kb.query(new Predicate("is_completed", [studentId]));
+
   // Build review items based on logical deductions
   const review = [];
   const mistakes = [];
@@ -120,6 +133,7 @@ function deduceEvaluation(kb, studentId, questions) {
   const score = correctQuestionMap.size;
 
   return {
+    completed: completionProofs.length > 0,
     score,
     total: questions.length,
     mistakes,

@@ -8,6 +8,7 @@ const examRoutes = require("./routes/examRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const logicClientPath = path.join(__dirname, "client");
 
 // Enable CORS for frontend interaction
 app.use(cors());
@@ -17,6 +18,22 @@ app.use(express.json());
 
 // Mount API routes
 app.use("/", examRoutes);
+
+// Serve Logic-specific browser behavior without changing the group's shared
+// frontend files. These routes take precedence over express.static below.
+const clientOverrides = {
+  "/js/config.js": "config.js",
+  "/js/pages/exam.js": "exam.js",
+  "/js/pages/examtype.js": "examtype.js",
+  "/js/pages/result.js": "result.js"
+};
+
+Object.entries(clientOverrides).forEach(([route, file]) => {
+  app.get(route, (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    return res.sendFile(path.join(logicClientPath, file));
+  });
+});
 
 // Serve existing frontend static files
 const frontendPath = path.join(__dirname, "../frontend");
@@ -33,6 +50,7 @@ app.get("/api/info", (req, res) => {
     endpoints: [
       "POST /login",
       "GET  /questions?subject=&examType=",
+      "GET  /exam-config?subject=&examType=",
       "POST /submit-exam",
       "GET  /results/:id/pdf"
     ]
