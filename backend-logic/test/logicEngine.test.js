@@ -45,7 +45,7 @@ function testLogicEngine() {
 
   console.log("Deduction Result:", JSON.stringify(result, null, 2));
 
-  if (result.score === 2 && result.total === 3 && result.mistakes.length === 1) {
+  if (result.score === 2 && result.total === 3 && result.mistakes.length === 1 && result.completed === true) {
     console.log("TEST PASSED: Score and deduction match expected logical evaluation!");
   } else {
     console.error("TEST FAILED: Score mismatch", result);

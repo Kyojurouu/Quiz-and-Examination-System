@@ -7,6 +7,7 @@ const { setupEvaluationRules, deduceEvaluation } = require("../logic/rules");
 
 // In-memory student store fallback
 const fallbackStudentStore = [];
+const resultReviewStore = new Map();
 
 class ExamService {
   /**
@@ -15,8 +16,9 @@ class ExamService {
    * and returns the deduced score and review.
    */
   static async evaluateAndSave({ name, section, subject, examType, answers, studentId }) {
-    // 1. Retrieve questions for domain knowledge
-    const questions = QuestionService.getQuestionsWithAnswers(subject, examType);
+    // Validate the submitted hard-coded question IDs and choices before
+    // asserting them as facts in the knowledge base.
+    const questions = QuestionService.validateSubmittedQuestions(subject, examType, answers);
 
     // 2. Instantiate Knowledge Base
     const kb = new KnowledgeBase();
@@ -61,12 +63,20 @@ class ExamService {
       fallbackStudentStore.push(savedStudent);
     }
 
+    const resultId = String(savedStudent._id);
+    resultReviewStore.set(resultId, {
+      mistakes: evaluation.mistakes,
+      review: evaluation.review,
+      total: evaluation.total
+    });
+
     return {
+      completed: evaluation.completed,
       score: evaluation.score,
       total: evaluation.total,
       mistakes: evaluation.mistakes,
       review: evaluation.review,
-      studentId: savedStudent._id,
+      studentId: resultId,
       student: savedStudent
     };
   }
@@ -84,6 +94,13 @@ class ExamService {
       }
     }
     return fallbackStudentStore.find((s) => String(s._id) === String(id)) || null;
+  }
+
+  static async getResultById(id) {
+    const student = await this.getStudentById(id);
+    if (!student) return null;
+    const review = resultReviewStore.get(String(id)) || { mistakes: [], review: [], total: null };
+    return { student, ...review };
   }
 }
 

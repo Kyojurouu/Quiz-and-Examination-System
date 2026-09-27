@@ -27,6 +27,11 @@ function assertQuestionFacts(kb, questions) {
  * @param {Array} answers [{ questionId, choiceIndex }]
  */
 function assertSubmissionFacts(kb, studentId, answers) {
+  // Fact: submitted_exam(studentId)
+  // A completion can only be proved after a validated submission reaches
+  // the knowledge base.
+  kb.assertFact("submitted_exam", [studentId]);
+
   answers.forEach((ans) => {
     // Fact: submitted_answer(studentId, questionId, choiceIndex)
     const choice = ans.choiceIndex !== undefined ? ans.choiceIndex : null;

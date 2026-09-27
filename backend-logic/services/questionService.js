@@ -1,65 +1,125 @@
-/**
- * QUESTION SERVICE
- * Manages the question bank facts and retrieval.
- */
+const {
+  SUBJECTS,
+  EXAM_CONFIGS,
+  QUESTION_BANKS
+} = require("../data/hardcodedQuestionBank");
 
-const QUESTION_BANK = {
-  default: [
-    {
-      id: "q1",
-      text: "Which loop structure explicitly tracks its own counter in imperative code?",
-      choices: ["for loop", "unification", "fact base", "backtracking"],
-      correctIndex: 0
-    },
-    {
-      id: "q2",
-      text: "In the logic paradigm, a program is mainly made up of:",
-      choices: ["Sequential steps", "Facts and rules", "Class hierarchies", "Event listeners"],
-      correctIndex: 1
-    },
-    {
-      id: "q3",
-      text: "Which database is used to store students and scores in this system?",
-      choices: ["MySQL", "MongoDB Atlas", "SQLite", "Firebase"],
-      correctIndex: 1
-    },
-    {
-      id: "q4",
-      text: "What does 'declarative' mean in a logic program?",
-      choices: [
-        "You state what is true, not how to compute it",
-        "You write explicit for-loops",
-        "You mutate global variables",
-        "You define classes and objects"
-      ],
-      correctIndex: 0
-    },
-    {
-      id: "q5",
-      text: "Which mechanism resolves queries against Horn clauses in a logic engine?",
-      choices: ["Imperative iteration", "Unification and resolution", "Binary search", "Thread pooling"],
-      correctIndex: 1
-    }
-  ]
+const SUBJECT_ALIASES = {
+  "first-sub": "ccincoml",
+  "second-sub": "ccsfen1l",
+  "third-sub": "ctprfiss"
 };
+const EXAM_TYPES = new Set(["quiz", "midterms", "finals"]);
+
+class InputError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "InputError";
+    this.statusCode = 400;
+  }
+}
+
+function shuffle(items) {
+  const result = [...items];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [result[index], result[randomIndex]] = [result[randomIndex], result[index]];
+  }
+  return result;
+}
 
 class QuestionService {
-  /**
-   * Retrieves questions for a specific subject and exam type.
-   * Strip out correctIndex for student security during exam taking.
-   */
-  static getQuestionsForClient(subjectId, examTypeId) {
-    const questions = this.getQuestionsWithAnswers(subjectId, examTypeId);
-    return questions.map(({ correctIndex, ...clientSafe }) => clientSafe);
+  static normalizeSubjectId(subjectId) {
+    const normalized = String(subjectId || "").trim().toLowerCase();
+    const resolved = SUBJECT_ALIASES[normalized] || normalized;
+    if (!Object.hasOwn(SUBJECTS, resolved)) {
+      throw new InputError("Unknown subject. Use CCINCOML, CCSFEN1L, or CTPRFISS.");
+    }
+    return resolved;
   }
 
-  /**
-   * Retrieves complete questions with answer keys for evaluation.
-   */
-  static getQuestionsWithAnswers(subjectId, examTypeId) {
-    const key = `${subjectId}-${examTypeId}`;
-    return QUESTION_BANK[key] || QUESTION_BANK.default;
+  static normalizeExamType(examType) {
+    const normalized = String(examType || "").trim().toLowerCase();
+    if (!EXAM_TYPES.has(normalized)) {
+      throw new InputError("Unknown exam type. Use quiz, midterms, or finals.");
+    }
+    return normalized;
+  }
+
+  static getExamConfig(subjectId, examType) {
+    const subject = this.normalizeSubjectId(subjectId);
+    const type = this.normalizeExamType(examType);
+    const subjectInfo = SUBJECTS[subject];
+    return {
+      subjectId: subject,
+      courseCode: subjectInfo.code,
+      subjectName: subjectInfo.name,
+      examType: type,
+      ...EXAM_CONFIGS[subject][type]
+    };
+  }
+
+  static getEligiblePool(subjectId, examType) {
+    const config = this.getExamConfig(subjectId, examType);
+    const bank = QUESTION_BANKS[config.subjectId];
+    // Quizzes focus on the first ten course concepts. Major exams use the
+    // complete 100-question subject bank.
+    return config.examType === "quiz" ? bank.slice(0, 40) : [...bank];
+  }
+
+  static getQuestionsWithAnswers(subjectId, examType, questionIds = null) {
+    const config = this.getExamConfig(subjectId, examType);
+    const eligible = this.getEligiblePool(config.subjectId, config.examType);
+
+    if (questionIds) {
+      const requestedIds = new Set(questionIds);
+      return eligible.filter((question) => requestedIds.has(question.id));
+    }
+
+    const ordered = config.randomize ? shuffle(eligible) : eligible;
+    return ordered.slice(0, config.itemCount);
+  }
+
+  static getQuestionsForClient(subjectId, examType) {
+    const config = this.getExamConfig(subjectId, examType);
+    const questions = this.getQuestionsWithAnswers(config.subjectId, config.examType);
+    return {
+      examConfig: config,
+      questions: questions.map(({ correctIndex, ...clientSafe }) => clientSafe)
+    };
+  }
+
+  static validateSubmittedQuestions(subjectId, examType, answers) {
+    const config = this.getExamConfig(subjectId, examType);
+    if (!Array.isArray(answers) || answers.length !== config.itemCount) {
+      throw new InputError(`This ${config.examType} requires exactly ${config.itemCount} answers.`);
+    }
+
+    const ids = answers.map((answer) => answer.questionId);
+    if (new Set(ids).size !== ids.length) {
+      throw new InputError("A question can only be answered once.");
+    }
+
+    const questions = this.getQuestionsWithAnswers(config.subjectId, config.examType, ids);
+    if (questions.length !== answers.length) {
+      throw new InputError("The submission contains a question that does not belong to this exam.");
+    }
+
+    const questionMap = new Map(questions.map((question) => [question.id, question]));
+    answers.forEach((answer) => {
+      const question = questionMap.get(answer.questionId);
+      if (!Number.isInteger(answer.choiceIndex) ||
+          answer.choiceIndex < 0 ||
+          answer.choiceIndex >= question.choices.length) {
+        throw new InputError(`Invalid answer choice for ${answer.questionId}.`);
+      }
+    });
+
+    // Preserve the same order sent to the student for the result review.
+    return ids.map((id) => questionMap.get(id));
   }
 }
 
 module.exports = QuestionService;
+module.exports.InputError = InputError;
+module.exports.shuffle = shuffle;
