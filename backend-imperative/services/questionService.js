@@ -37,7 +37,7 @@ const QUESTION_BANK = {
   //  Quiz: 15 items  |  Midterms: 30 items  |  Finals: 30 items
   // ═══════════════════════════════════════════════════════════════════════════
 
-  "intro-computing-quiz": [
+  "ccincoml-quiz": [
     // ── Part I: Multiple Choice (8) ──────────────────────────────────────────
     { id: "ic-qz-q1",  text: "What does CPU stand for?", choices: ["Computer Processing Unit", "Central Program Unit", "Central Processing Unit", "Core Processing Unit"], correctIndex: 2 },
     { id: "ic-qz-q2",  text: "Which of the following is an example of an output device?", choices: ["Keyboard", "Mouse", "Scanner", "Monitor"], correctIndex: 3 },
@@ -58,7 +58,7 @@ const QUESTION_BANK = {
     { id: "ic-qz-q15", text: "Which of the following correctly lists three generations of programming languages?", choices: ["HTML, CSS, JavaScript", "Machine Language, Assembly Language, High-Level Language", "Python, Java, Machine Code", "Compiler, Interpreter, Assembler"], correctIndex: 1 }
   ],
 
-  "intro-computing-midterms": [
+  "ccincoml-midterms": [
     // ── Part I: Multiple Choice (15) ─────────────────────────────────────────
     { id: "ic-mt-q1",  text: "What is the main purpose of an operating system?", choices: ["To browse the internet", "To manage hardware and software resources", "To create documents", "To play multimedia files"], correctIndex: 1 },
     { id: "ic-mt-q2",  text: "Which of the following is an example of a high-level programming language?", choices: ["Machine language", "Assembly language", "Binary code", "Python"], correctIndex: 3 },
@@ -95,7 +95,7 @@ const QUESTION_BANK = {
     { id: "ic-mt-q30", text: "A file is 2 MB in size. How many KB is it?", choices: ["1,024 KB", "2,000 KB", "2,048 KB", "4,096 KB"], correctIndex: 2 }
   ],
 
-  "intro-computing-finals": [
+  "ccincoml-finals": [
     // ── Part I: True or False → 2-choice MC (10) ────────────────────────────
     { id: "ic-fn-q1",  text: "True or False: A byte consists of 8 bits.", choices: ["True", "False"], correctIndex: 0 },
     { id: "ic-fn-q2",  text: "True or False: RAM is a type of permanent storage.", choices: ["True", "False"], correctIndex: 1 },
@@ -136,7 +136,7 @@ const QUESTION_BANK = {
   //  Quiz: 10 items  |  Midterms: 100 items  |  Finals: 100 items
   // ═══════════════════════════════════════════════════════════════════════════
 
-  "social-professional-quiz": [
+  "ctprfiss-quiz": [
     { id: "spi-qz-q1",  text: "What is the term for the ethical guidelines that govern the use of computers and technology?", choices: ["Computer law", "Computer ethics", "Digital rights", "Cybersecurity policy"], correctIndex: 1 },
     { id: "spi-qz-q2",  text: "Which term refers to the unauthorized access of a computer system?", choices: ["Phishing", "Hacking", "Spamming", "Spoofing"], correctIndex: 1 },
     { id: "spi-qz-q3",  text: "'Intellectual property' refers to:", choices: ["Smart computing devices", "Database management systems", "Creations of the mind that are protected by law", "Internet protocol standards"], correctIndex: 2 },
@@ -149,7 +149,7 @@ const QUESTION_BANK = {
     { id: "spi-qz-q10", text: "'Data privacy' refers to:", choices: ["Storing data in the cloud", "Encrypting all company files", "Sharing data freely between departments", "The protection of personal information from unauthorized access"], correctIndex: 3 }
   ],
 
-  "social-professional-midterms": [
+  "ctprfiss-midterms": [
     // Part I: Multiple Choice (70)
     { id: "spi-mt-q1",  text: "Which of the following BEST defines computer ethics?", choices: ["Rules for building computers", "Moral principles governing the use of computers and technology", "Laws that only punish hackers", "Guidelines for software design only"], correctIndex: 1 },
     { id: "spi-mt-q2",  text: "What law in the Philippines penalizes cybercrime?", choices: ["Republic Act 8792", "Republic Act 10175", "Republic Act 9711", "Republic Act 7394"], correctIndex: 1 },
@@ -254,7 +254,7 @@ const QUESTION_BANK = {
     { id: "spi-mt-q100", text: "A software company releases a product with known security vulnerabilities in order to meet a launch deadline. This is:", choices: ["Standard and accepted industry practice", "Ethically questionable and potentially harmful to users", "Acceptable if the vulnerabilities are considered minor", "A smart business decision to beat competitors to market"], correctIndex: 1 }
   ],
 
-  "social-professional-finals": [
+  "ctprfiss-finals": [
     // Part I: Multiple Choice (70)
     { id: "spi-fn-q1",  text: "What is 'informed consent' in the context of data collection?", choices: ["Clicking 'Agree' on a popup without reading it", "Voluntarily agreeing after being clearly informed of what data is collected and how it is used", "Any form of agreement to use a digital service", "A government-mandated consent for government services only"], correctIndex: 1 },
     { id: "spi-fn-q2",  text: "What does the Data Privacy Act of 2012 (RA 10173) protect in the Philippines?", choices: ["Intellectual property of software companies", "Personal information of individuals from unauthorized collection and use", "Computer hardware from physical theft", "Company data from cybercriminals only"], correctIndex: 1 },
@@ -364,7 +364,7 @@ const QUESTION_BANK = {
   //  Quiz: 30 items  |  Midterms: 75 items  |  Finals: 75 items
   // ═══════════════════════════════════════════════════════════════════════════
 
-  "software-engineering-quiz": [
+  "ccsfen1l-quiz": [
     { id: "se-qz-q1",  text: "A development team gathers requirements from the client before writing any code. Which SDLC phase are they in?", choices: ["Testing", "Design", "Requirements gathering", "Deployment"], correctIndex: 2 },
     { id: "se-qz-q2",  text: "A software team builds a feature perfectly but it is not what the client actually wanted. This is an example of:", choices: ["A technical bug", "A requirements misunderstanding", "Poor software testing", "A server configuration failure"], correctIndex: 1 },
     { id: "se-qz-q3",  text: "A project manager notices the team will miss the deadline because a key developer is sick. What should they do first?", choices: ["Cancel the project entirely", "Immediately replace the developer", "Assess the impact on the schedule and adjust the project plan accordingly", "Tell the client the project is still on track"], correctIndex: 2 },
@@ -397,7 +397,7 @@ const QUESTION_BANK = {
     { id: "se-qz-q30", text: "A team is 2 weeks behind. The manager adds 4 new developers to catch up. According to Brooks' Law, what will likely happen?", choices: ["The project will immediately get back on schedule", "The project will likely be delayed further due to onboarding and communication overhead", "The four new developers will solve all existing issues", "The project timeline will remain exactly the same"], correctIndex: 1 }
   ],
 
-  "software-engineering-midterms": [
+  "ccsfen1l-midterms": [
     // Part I: Multiple Choice (50)
     { id: "se-mt-q1",  text: "What does SDLC stand for?", choices: ["Software Development Life Cycle", "System Design and Logic Concept", "Software Design and Learning Curve", "Systematic Development and Launch Criteria"], correctIndex: 0 },
     { id: "se-mt-q2",  text: "Which SDLC model follows a strict sequential order of phases where you cannot go back?", choices: ["Agile", "Spiral", "Waterfall", "Scrum"], correctIndex: 2 },
@@ -478,7 +478,7 @@ const QUESTION_BANK = {
     { id: "se-mt-q75", text: "What is the PRIMARY consequence of neglecting software documentation throughout a project?", choices: ["The software will execute significantly slower due to missing metadata", "The team will be unable to use version control effectively", "Future developers will struggle to understand, maintain, and extend the system", "All quality assurance tests will automatically fail without documentation"], correctIndex: 2 }
   ],
 
-  "software-engineering-finals": [
+  "ccsfen1l-finals": [
     // Part I: Multiple Choice (30)
     { id: "se-fn-q1",  text: "What is 'software reliability'?", choices: ["How frequently the software receives updates", "The probability that software will perform its required function without failure for a specified period", "The execution speed of the software", "The number of active users the software has"], correctIndex: 1 },
     { id: "se-fn-q2",  text: "What is the primary goal of software engineering?", choices: ["Writing the most complex and sophisticated code possible", "Developing software as quickly as possible", "Systematically developing software that is reliable, efficient, maintainable, and meets user needs", "Maximizing the number of features in a product release"], correctIndex: 2 },

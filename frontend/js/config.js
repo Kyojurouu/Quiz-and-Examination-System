@@ -18,23 +18,23 @@ const CONFIG = {
    */
   SUBJECTS: [
     {
-      id: "intro-computing",
-      code: "CC 101",
+      id: "ccincoml",
+      code: "CCINCOML",
       name: "Introduction to Computing",
       professor: "Prof. Renee Claudette V. Pelagio",
       durations: { quiz: 15, midterms: 75, finals: 75 }
     },
     {
-      id: "social-professional",
-      code: "CC 105",
+      id: "ctprfiss",
+      code: "CTPRFISS",
       name: "Social and Professional Issues",
       professor: "Prof. Eliseo Q. Ramirez",
       durations: { quiz: 30, midterms: 120, finals: 120 }
     },
     {
-      id: "software-engineering",
-      code: "CC 103",
-      name: "Software Engineering",
+      id: "ccsfen1l",
+      code: "CCSFEN1L",
+      name: "Software Engineering 1",
       professor: "Prof. Elsie V. Isip",
       durations: { quiz: 30, midterms: 90, finals: 90 }
     }
