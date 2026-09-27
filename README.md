@@ -1,183 +1,385 @@
 # Quiz & Examination System
 
-A quiz/exam platform built twice on the backend, once in the **imperative**
-paradigm and once in the **logic** paradigm, sharing one frontend and one
-MongoDB database, so the two implementations can be compared directly.
+A quiz and examination platform with one shared frontend and two independently implemented Express backends:
 
-## Folder structure
+- **Imperative backend** — uses loops, conditionals, mutable state, and array updates.
+- **Logic backend** — uses facts, Horn clauses, unification, and backward-chaining resolution.
 
-```
-quiz-exam-system/
+Both backends use the same MongoDB database and `students` collection. This allows the two programming paradigms to be compared using the same working application.
+
+## Features
+
+- Student login using name, block, and subject information.
+- Subject selection.
+- Quiz, Midterms, and Finals assessment types.
+- Three configured subjects:
+  - **CCINCOML** — Introduction to Computing
+  - **CTPRFISS** — Social and Professional Issues
+  - **CCSFEN1L** — Software Engineering 1
+- Subject-specific exam durations.
+- Professor-informed question banks and assessment sizes.
+- Question randomization using Fisher–Yates shuffle.
+- Multiple-choice answer evaluation.
+- Exam submission and score calculation.
+- Answer review and mistake tracking.
+- Exam completion tracking.
+- PDF result report generation.
+- Health-check endpoints.
+- Backend information endpoints.
+- Shared MongoDB database configuration.
+- In-memory fallback storage when MongoDB is unavailable.
+- Automated tests for imperative scoring and logic inference.
+
+## Project Structure
+
+```text
+Quiz-and-Examination-System/
 │
-├── frontend/                        ✅ BUILT — shared frontend, same UI for both paradigms
-│   ├── home.html                    # Welcome screen + subject select
-│   ├── details.html                 # Name / block entry
-│   ├── examtype.html                # Quiz / Midterms / Finals select, with time windows
-│   ├── exam.html                    # Question-by-question exam taking screen
-│   ├── result.html                  # Score, mistakes, name + "Download PDF" button
+├── frontend/                         # Shared application frontend
+│   ├── home.html                     # Subject selection
+│   ├── details.html                  # Student name and block entry
+│   ├── examtype.html                 # Quiz, Midterms, and Finals selection
+│   ├── exam.html                     # Question-by-question exam screen
+│   ├── result.html                   # Score, review, and result report
 │   ├── css/
-│   │   └── styles.css               # Shared design system
+│   │   └── styles.css                # Application styles
 │   └── js/
-│       ├── config.js                # API base URL + MOCK_MODE switch, subjects, exam types
-│       ├── store.js                 # sessionStorage wrapper, shared session across pages
-│       ├── api.js                   # All backend calls go through here (mock or real)
-│       ├── ui.js                    # Shared DOM/formatting helpers
-│       ├── mockData.js              # Sample questions used only while MOCK_MODE is true
-│       └── pages/                   # One script per HTML page
-│           ├── welcome.js
-│           ├── login.js
-│           ├── examtype.js
-│           ├── exam.js
-│           └── result.js
+│       ├── config.js                 # Backend, subjects, and duration settings
+│       ├── store.js                  # Session storage management
+│       ├── api.js                    # Frontend-backend API communication
+│       ├── ui.js                     # Shared user-interface helpers
+│       └── pages/                    # Page-specific scripts
 │
-├── backend-imperative/              ✅ BUILT — imperative backend, port 4000
-│   ├── server.js                    # Express app, port 4000
-│   ├── routes/examRoutes.js         # API routes
-│   ├── controllers/                # Request and response handling
-│   ├── services/
-│   │   ├── questionService.js       # Question retrieval and answer-key protection
-│   │   └── examService.js           # for-loops, if/else, and mutable score state
-│   ├── config/db.js                 # MongoDB connection setup
-│   ├── models/Student.js            # Shared students collection schema
-│   ├── test/examService.test.js     # Imperative scoring tests
+├── backend-imperative/               # Imperative backend, port 4000
+│   ├── server.js                     # Express server and frontend hosting
+│   ├── routes/
+│   │   └── examRoutes.js             # API routes and health check
+│   ├── controllers/                  # Request handlers
+│   ├── services/                     # Question retrieval and exam evaluation
+│   ├── config/
+│   │   └── db.js                     # MongoDB connection
+│   ├── models/
+│   │   └── Student.js                # Shared student schema
+│   ├── test/
+│   │   └── examService.test.js       # Imperative scoring tests
 │   ├── package.json
-│   └── .env                         # MONGO_URI
+│   └── .env.example                  # Environment-variable template
 │
-├── backend-logic/                   ✅ BUILT — logic backend, port 5000
-│   ├── server.js                    # Express app, port 5000
-│   ├── routes/examRoutes.js         # API routes
+├── backend-logic/                    # Logic backend, port 5000
+│   ├── server.js                     # Express server and frontend hosting
+│   ├── routes/
+│   │   └── examRoutes.js             # API routes and exam configuration
+│   ├── client/                       # Logic-specific frontend behavior
 │   ├── logic/
-│   │   ├── facts.js                 # Facts: answers and question data
-│   │   ├── rules.js                 # Rules for correct and incorrect answers
-│   │   └── logicEngine.js           # Unification and backward-chaining engine
-│   ├── services/                    # Question and logical evaluation services
-│   ├── config/db.js                 # MongoDB connection setup
-│   ├── models/Student.js            # Shared students collection schema
-│   ├── test/logicEngine.test.js     # Inference-engine tests
+│   │   ├── facts.js                  # Knowledge-base facts
+│   │   ├── rules.js                  # Horn-clause evaluation rules
+│   │   └── logicEngine.js            # Unification and backward chaining
+│   ├── services/                     # Question and logical evaluation services
+│   ├── config/
+│   │   └── db.js                     # MongoDB connection
+│   ├── models/
+│   │   └── Student.js                # Shared student schema
+│   ├── test/
+│   │   └── logicEngine.test.js       # Inference-engine tests
 │   ├── package.json
-│   └── .env                         # MONGO_URI
+│   └── .env.example                  # Environment-variable template
 │
-└── README.md                         # this file
+├── package.json                      # Root convenience scripts
+├── package-lock.json                 # Root npm dependency lockfile
+└── README.md
 ```
 
-## Current status
+## Application Workflow
 
-The frontend and both backend implementations are now available. The frontend
-can run in mock mode without a database or backend server, or it can call
-either backend:
+1. Start one of the backend servers.
+2. Open the frontend from the running backend.
+3. Select a subject.
+4. Enter the student's name and block.
+5. Select an assessment type.
+6. Answer the examination questions.
+7. Submit the examination.
+8. View the score, mistakes, and answer review.
+9. Generate or print the result report.
 
-- `frontend/js/config.js` contains the subjects, exam types, time windows,
-  backend URL, and `MOCK_MODE` setting.
-- When `MOCK_MODE` is `true`, `frontend/js/api.js` uses local mock responses
-  from `frontend/js/mockData.js`.
-- When `MOCK_MODE` is `false`, the frontend sends requests to the backend
-  selected by `API_BASE`.
-- Both backends use the same MongoDB database, `LogicalSystem`, and the same
-  `students` collection.
-- Quiz exams are configured for 30 minutes. Midterms and Finals are configured
-  for 1 hour.
+The shared frontend communicates with the selected backend through `frontend/js/api.js`.
 
-The imperative backend demonstrates imperative programming through explicit
-step-by-step execution: mutable variables, `for` loops, conditional branches,
-and array updates. The logic backend represents answers as facts and deduces
-results through rules, unification, and backward-chaining resolution.
+## Configuration
 
-## Frontend pages
+The active backend is configured in:
 
-| Page | File | Purpose |
-| --- | --- | --- |
-| Home | `frontend/home.html` | Select a subject |
-| Details | `frontend/details.html` | Enter the student name and block |
-| Exam type | `frontend/examtype.html` | Select an available exam type |
-| Exam | `frontend/exam.html` | Answer questions and submit the attempt |
-| Result | `frontend/result.html` | View the score and answer review |
-
-The normal starting page is `home.html`. All page links are relative to the
-`frontend/` directory.
-
-## How to run this patch (frontend only, mock mode)
-
-1. Open a terminal inside `quiz-exam-system/`.
-2. Serve the folder (opening `home.html` directly also works, but a local
-   server avoids browser file:// quirks):
-   ```
-   npx serve .
-   ```
-3. Open `http://localhost:3000/frontend/home.html`.
-
-## Backend setup
-
-1. Create `.env` files in both backend folders. The imperative example can be
-   copied with:
-   ```
-   Copy-Item backend-imperative\.env.example backend-imperative\.env
-   ```
-   Use the same `MONGO_URI` in both files. Both backends connect to the
-   `LogicalSystem` database and the shared `students` collection.
-2. Install dependencies:
-   ```
-   cd backend-imperative && npm install
-   cd ..\backend-logic && npm install
-   ```
-3. Start each backend in its own terminal:
-   ```
-   cd backend-imperative && npm start   # http://localhost:4000
-   cd backend-logic       && npm start   # http://localhost:5000
-   ```
-   On Windows PowerShell, use `npm.cmd` instead of `npm` if script execution
-   is blocked:
-   ```
-   npm.cmd start
-   ```
-   Different ports allow both servers to run at the same time; sharing a
-   database does not require sharing a server port.
-4. In `frontend/js/config.js`, set `MOCK_MODE: false` and set `API_BASE` to
-   `http://localhost:4000` for the imperative backend or
-   `http://localhost:5000` for the logic backend.
-   No other frontend file needs to change — every page already calls
-   `API.login()`, `API.getQuestions()`, `API.submitExam()`, and
-   `API.downloadResultPdf()`.
-5. Serve `frontend/` as in the steps above and use the app as normal.
-
-The backend servers also serve the shared frontend files directly. To test
-the imperative backend like the logic backend screenshot, start only
-`backend-imperative` and open:
-
+```text
+frontend/js/config.js
 ```
+
+For the imperative backend:
+
+```js
+API_BASE: "http://localhost:4000"
+```
+
+For the logic backend:
+
+```js
+API_BASE: "http://localhost:5000"
+```
+
+The configuration file also contains:
+
+- Available subjects
+- Subject codes
+- Professor names
+- Assessment types
+- Assessment availability windows
+- Subject-specific assessment durations
+
+Assessment durations are resolved using:
+
+```js
+CONFIG.getDuration(subjectId, examTypeId);
+```
+
+The duration configured for a specific subject takes priority over the global assessment duration.
+
+## Backend Setup
+
+### 1. Configure Environment Variables
+
+Create a private `.env` file in each backend directory using the provided templates:
+
+```powershell
+Copy-Item backend-imperative\.env.example backend-imperative\.env
+Copy-Item backend-logic\.env.example backend-logic\.env
+```
+
+Set a valid MongoDB connection string in both `.env` files.
+
+Both backends use:
+
+```text
+Database: LogicalSystem
+Collection: students
+```
+
+Do not commit `.env` files or database credentials to the repository.
+
+### 2. Install Dependencies
+
+Install the imperative backend dependencies:
+
+```bash
+cd backend-imperative
+npm install
+```
+
+Install the logic backend dependencies:
+
+```bash
+cd ../backend-logic
+npm install
+```
+
+On Windows PowerShell, use `npm.cmd` if the execution policy prevents `npm` from running.
+
+## Running the Application
+
+### Imperative Backend
+
+From the repository root:
+
+```bash
+npm start
+```
+
+Or from the backend directory:
+
+```bash
+cd backend-imperative
+npm start
+```
+
+The imperative backend runs at:
+
+```text
+http://localhost:4000
+```
+
+Open the application at:
+
+```text
 http://localhost:4000/home.html
 ```
 
-In this mode, `frontend/js/config.js` must contain
-`API_BASE: "http://localhost:4000"` and `MOCK_MODE: false`. No separate
-`npx serve` process is required.
+The imperative backend evaluates examinations using explicit loops, conditional branches, mutable variables, and array updates.
 
-The normal imperative test flow is therefore:
+### Logic Backend
 
+From the backend directory:
+
+```bash
+cd backend-logic
+npm start
 ```
+
+The logic backend runs at:
+
+```text
+http://localhost:5000
+```
+
+Open the application at:
+
+```text
+http://localhost:5000/home.html
+```
+
+The logic backend evaluates examinations using facts, rules, unification, and backward-chaining resolution.
+
+### Development Mode
+
+Both backends support automatic server restart during development:
+
+```bash
+npm run dev
+```
+
+Run the command inside the backend directory you want to develop.
+
+### Running Both Backends
+
+To compare both implementations, start each backend in a separate terminal:
+
+```bash
 cd backend-imperative
-npm.cmd start
+npm start
 ```
 
-Then open `http://localhost:4000/home.html` in a browser.
-
-## Tests
-
-Run the imperative scoring tests:
-
+```bash
+cd backend-logic
+npm start
 ```
+
+Then change `API_BASE` in `frontend/js/config.js` to the backend that you want to test.
+
+## API Endpoints
+
+Both backends provide the following endpoints:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Check whether the backend is running |
+| `GET` | `/api/info` | View backend paradigm and configuration |
+| `POST` | `/login` | Register or identify a student |
+| `GET` | `/questions?subject=<id>&examType=<id>` | Retrieve examination questions |
+| `POST` | `/submit-exam` | Submit and evaluate an examination |
+| `GET` | `/results/:id/pdf` | Generate the examination result report |
+
+The logic backend also provides:
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/exam-config?subject=<id>&examType=<id>` | Retrieve examination configuration |
+
+For frontend compatibility, API routes are also available with the `/api` prefix:
+
+```text
+/api/login
+/api/questions
+/api/exam-config
+/api/submit-exam
+/api/results/:id/pdf
+```
+
+## Programming Paradigm Comparison
+
+### Imperative Backend
+
+The imperative backend evaluates examinations through explicit step-by-step procedures.
+
+It uses:
+
+- `for` loops
+- Conditional statements
+- Mutable score counters
+- Array updates
+- Explicit question randomization
+- Direct state changes during evaluation
+
+Important files include:
+
+```text
+backend-imperative/services/
+backend-imperative/controllers/
+backend-imperative/routes/
+```
+
+### Logic Backend
+
+The logic backend evaluates examinations declaratively using a knowledge base.
+
+It uses:
+
+- Facts
+- Predicates
+- Logic variables
+- Horn clauses
+- Unification
+- Backward-chaining resolution
+- Logical proof of correct and incorrect answers
+- Logical proof of examination completion
+
+Important files include:
+
+```text
+backend-logic/logic/facts.js
+backend-logic/logic/rules.js
+backend-logic/logic/logicEngine.js
+```
+
+The logic rules derive:
+
+- Correct answers
+- Incorrect answers
+- Student examination completion
+- Final score and answer review
+
+## Testing
+
+Run the imperative backend tests:
+
+```bash
 cd backend-imperative
 npm test
 ```
 
 Run the logic-engine tests:
 
-```
+```bash
 cd backend-logic
 npm test
 ```
 
-## Database fallback
+The tests use Node.js's built-in test runner configured in each backend's `package.json`.
 
-If MongoDB is unavailable, both backends use an in-memory student store so the
-application can still be demonstrated. Data in the fallback store is lost when
-the corresponding server stops.
+## Database Fallback
+
+If MongoDB is unavailable, the backends use an in-memory student store so the application can continue running for demonstrations and testing.
+
+Data stored in the fallback store is lost when the corresponding server stops.
+
+## Package Files
+
+The repository contains npm package files for managing the application:
+
+- `package.json` — defines scripts and project metadata.
+- `package-lock.json` — records exact npm dependency versions.
+- `backend-imperative/package.json` — defines imperative backend dependencies and scripts.
+- `backend-logic/package.json` — defines logic backend dependencies and scripts.
+
+Install backend dependencies separately inside each backend directory before running the application.
+
+## Security Notes
+
+- Keep MongoDB credentials in local `.env` files.
+- Never commit real connection strings or passwords.
+- Use `.env.example` files as configuration templates.
+- Replace exposed credentials immediately if they have previously been committed publicly.
