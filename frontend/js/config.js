@@ -10,14 +10,42 @@ const CONFIG = {
   API_BASE: "http://localhost:4000",
   MOCK_MODE: false,
 
+  /**
+   * SUBJECTS
+   * Each subject carries a `durations` map (examTypeId -> minutes) that
+   * overrides the global EXAM_TYPES.durationMinutes for that subject.
+   * Source: professor survey responses (Sept 2026).
+   */
   SUBJECTS: [
-    { id: "first-sub", code: "1 - Course Code", name: "1 - Subject Name" },
-    { id: "second-sub", code: "2 - Course Code", name: "2 - Subject Name" },
-    { id: "third-sub", code: "3 - Course Code", name: "3 - Subject Name" }
+    {
+      id: "ccincoml",
+      code: "CCINCOML",
+      name: "Introduction to Computing",
+      professor: "Prof. Renee Claudette V. Pelagio",
+      durations: { quiz: 15, midterms: 75, finals: 75 }
+    },
+    {
+      id: "ctprfiss",
+      code: "CTPRFISS",
+      name: "Social and Professional Issues",
+      professor: "Prof. Eliseo Q. Ramirez",
+      durations: { quiz: 30, midterms: 120, finals: 120 }
+    },
+    {
+      id: "ccsfen1l",
+      code: "CCSFEN1L",
+      name: "Software Engineering 1",
+      professor: "Prof. Elsie V. Isip",
+      durations: { quiz: 30, midterms: 90, finals: 90 }
+    }
   ],
 
-  // opensAt / closesAt come from MongoDB in the real system (one document
-  // per subject + exam type). These defaults just make the demo usable.
+  /**
+   * EXAM_TYPES
+   * durationMinutes here is a global fallback only.
+   * The active subject's durations map takes priority.
+   * See: getDuration(subjectId, examTypeId) helper below.
+   */
   EXAM_TYPES: [
     {
       id: "quiz",
@@ -31,14 +59,28 @@ const CONFIG = {
       name: "Midterms",
       opensAt: "2026-01-01T00:00",
       closesAt: "2026-12-31T23:59",
-      durationMinutes: 60
+      durationMinutes: 90
     },
     {
       id: "finals",
       name: "Finals",
       opensAt: "2026-01-01T00:00",
       closesAt: "2026-12-31T23:59",
-      durationMinutes: 60
+      durationMinutes: 90
     }
-  ]
+  ],
+
+  /**
+   * getDuration(subjectId, examTypeId)
+   * Returns the correct exam duration in minutes for a given subject + exam type.
+   * Checks the subject's durations map first; falls back to EXAM_TYPES default.
+   */
+  getDuration(subjectId, examTypeId) {
+    const subject = this.SUBJECTS.find(function (s) { return s.id === subjectId; });
+    if (subject && subject.durations && subject.durations[examTypeId] !== undefined) {
+      return subject.durations[examTypeId];
+    }
+    const examType = this.EXAM_TYPES.find(function (e) { return e.id === examTypeId; });
+    return examType ? examType.durationMinutes : 60;
+  }
 };
