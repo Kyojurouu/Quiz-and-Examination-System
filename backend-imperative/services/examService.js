@@ -4,6 +4,8 @@ const { isDbConnected } = require("../config/db");
 
 // This store keeps the demo usable when MongoDB is unavailable.
 const fallbackStudentStore = [];
+const completedAttemptKeys = new Set();
+const resultReviewStore = new Map();
 
 /**
  * Imperative evaluation:
@@ -58,16 +60,35 @@ function evaluateSubmission(questions, answers) {
   return { score, total: questions.length, mistakes, review };
 }
 
-async function evaluateAndSave({ name, section, subject, examType, answers }) {
+async function evaluateAndSave({ name, email, section, subject, examType, answers, studentId }) {
   // Evaluation happens before persistence so the stored score matches the review.
   const questions = QuestionService.getQuestionsWithAnswers(subject, examType);
   const evaluation = evaluateSubmission(questions, answers);
+  const identity = String(email || studentId || name).trim().toLowerCase();
+  const attemptKey = [identity, subject, examType].join(":");
+  if (completedAttemptKeys.has(attemptKey)) {
+    const error = new Error("This exam has already been completed.");
+    error.code = "ATTEMPT_COMPLETED";
+    throw error;
+  }
+  if (isDbConnected() && email) {
+    const existingAttempt = await Student.findOne({ email, subject, examType });
+    if (existingAttempt) {
+      const error = new Error("This exam has already been completed.");
+      error.code = "ATTEMPT_COMPLETED";
+      throw error;
+    }
+  }
   const studentData = {
     name: name || "Student",
+    email: email ? String(email).trim().toLowerCase() : undefined,
     section: section || "N/A",
     subject: subject || "General",
     examType: examType || "quiz",
-    score: evaluation.score
+    score: evaluation.score,
+    total: evaluation.total,
+    review: evaluation.review,
+    mistakes: evaluation.mistakes
   };
 
   let savedStudent = null;
@@ -89,11 +110,90 @@ async function evaluateAndSave({ name, section, subject, examType, answers }) {
     fallbackStudentStore.push(savedStudent);
   }
 
+  completedAttemptKeys.add(attemptKey);
+  resultReviewStore.set(String(savedStudent._id), {
+    mistakes: evaluation.mistakes,
+    review: evaluation.review,
+    total: evaluation.total
+  });
+
   return {
+    completed: true,
     ...evaluation,
     studentId: savedStudent._id,
     student: savedStudent
   };
+}
+
+async function getCompletedExamsByEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return [];
+  const completed = [];
+  if (isDbConnected()) {
+    const records = await Student.find({ email: normalizedEmail }).lean();
+    records.forEach((record) => completed.push(record.subject + ":" + record.examType));
+  }
+  fallbackStudentStore.forEach((record) => {
+    if (String(record.email || "").toLowerCase() === normalizedEmail) {
+      completed.push(record.subject + ":" + record.examType);
+    }
+  });
+  return [...new Set(completed)];
+}
+
+async function getCompletedScoresByEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return {};
+  const scores = {};
+  const addRecord = (record) => {
+    scores[record.subject + ":" + record.examType] = {
+      score: record.score,
+      total: record.total || null
+    };
+  };
+  if (isDbConnected()) {
+    const records = await Student.find({ email: normalizedEmail }).lean();
+    records.forEach(addRecord);
+  }
+  fallbackStudentStore.forEach((record) => {
+    if (String(record.email || "").toLowerCase() === normalizedEmail) addRecord(record);
+  });
+  return scores;
+}
+
+async function getCompletedResultsByEmail(email) {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail) return {};
+  const results = {};
+  const addRecord = (record) => {
+    const key = record.subject + ":" + record.examType;
+    results[key] = {
+      resultId: String(record._id),
+      score: record.score,
+      total: record.total || null,
+      review: record.review || [],
+      mistakes: record.mistakes || []
+    };
+  };
+  if (isDbConnected()) {
+    const records = await Student.find({ email: normalizedEmail }).lean();
+    records.forEach(addRecord);
+  }
+  fallbackStudentStore.forEach((record) => {
+    if (String(record.email || "").toLowerCase() === normalizedEmail) addRecord(record);
+  });
+  return results;
+}
+
+async function getResultById(id) {
+  const student = await getStudentById(id);
+  if (!student) return null;
+  const review = resultReviewStore.get(String(id)) || {
+    mistakes: student.mistakes || [],
+    review: student.review || [],
+    total: student.total || null
+  };
+  return { student, ...review };
 }
 
 // Retrieve a persisted result for the printable report endpoint.
@@ -119,4 +219,4 @@ async function getStudentById(id) {
   return null;
 }
 
-module.exports = { evaluateSubmission, evaluateAndSave, getStudentById };
+module.exports = { evaluateSubmission, evaluateAndSave, getStudentById, getResultById, getCompletedExamsByEmail, getCompletedScoresByEmail, getCompletedResultsByEmail };

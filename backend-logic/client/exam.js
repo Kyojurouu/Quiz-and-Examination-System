@@ -3,7 +3,7 @@
   if (!session) return;
 
   const examType = CONFIG.EXAM_TYPES.find((item) => item.id === session.examTypeId);
-  UI.qs("#student-label").textContent = session.name + " | " + UI.subjectName(session.subjectId);
+  UI.setupAccountHeader(true);
 
   const response = await API.getQuestions(session.subjectId, session.examTypeId);
   const questions = response.questions || [];
@@ -77,14 +77,28 @@
     event.returnValue = "";
   });
 
-  function markCompleted(subjectId, examTypeId) {
+  function markCompleted(subjectId, examTypeId, result) {
     const key = subjectId + ":" + examTypeId;
     const current = Store.get();
     const completedExams = Array.isArray(current.completedExams)
       ? current.completedExams.filter((item) => typeof item === "string")
       : [];
     if (!completedExams.includes(key)) completedExams.push(key);
-    Store.set({ completedExams });
+    const completedScores = current.completedScores && typeof current.completedScores === "object"
+      ? current.completedScores
+      : {};
+    completedScores[key] = { score: result.score, total: result.total };
+    const completedResults = current.completedResults && typeof current.completedResults === "object"
+      ? current.completedResults
+      : {};
+    completedResults[key] = {
+      resultId: result.studentId,
+      score: result.score,
+      total: result.total,
+      review: result.review || [],
+      mistakes: result.mistakes || []
+    };
+    Store.set({ completedExams, completedScores, completedResults });
   }
 
   async function submit() {
@@ -114,7 +128,7 @@
       answers: questions.map((question) => ({ questionId: question.id, choiceIndex: answers[question.id] }))
     });
     if (result.result?.completed === true) {
-      markCompleted(session.subjectId, session.examTypeId);
+      markCompleted(session.subjectId, session.examTypeId, result.result);
     }
     Store.set({ result: result.result, resultId: result.result?.studentId });
     window.location.href = "result.html";

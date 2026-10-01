@@ -14,6 +14,8 @@ router.post("/login", AuthController.login);
 router.post("/api/login", AuthController.login);
 router.get("/questions", ExamController.getQuestions);
 router.get("/api/questions", ExamController.getQuestions);
+router.get("/exam-config", ExamController.getExamConfig);
+router.get("/api/exam-config", ExamController.getExamConfig);
 router.post("/submit-exam", ExamController.submitExam);
 router.post("/api/submit-exam", ExamController.submitExam);
 router.get("/results/:id/pdf", ExamController.getResultPdf);

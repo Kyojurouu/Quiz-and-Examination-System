@@ -119,7 +119,7 @@ test("keeps Logic browser changes inside backend-logic", () => {
 
   assert.match(server, /clientOverrides/);
   assert.match(examTypeClient, /Completed/);
-  assert.match(examTypeClient, /navigationEntry\.type === "reload"/);
+  assert.doesNotMatch(examTypeClient, /navigationEntry\.type === "reload"/);
   assert.match(examClient, /response\.examConfig\?\.durationMinutes/);
   assert.match(examClient, /result\.result\?\.completed === true/);
 });

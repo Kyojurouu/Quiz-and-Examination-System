@@ -60,7 +60,7 @@ app.get("/api/info", (req, res) => {
 // Root: redirect browser to home.html, or return JSON if API client
 app.get("/", (req, res) => {
   if (req.accepts("html")) {
-    return res.sendFile(path.join(frontendPath, "home.html"));
+    return res.sendFile(path.join(frontendPath, "login.html"));
   }
   return res.json({
     name: "LogicalSystem API",

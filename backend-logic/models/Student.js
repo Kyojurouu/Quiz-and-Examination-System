@@ -20,6 +20,11 @@ const studentSchema = new mongoose.Schema(
       required: [true, "Student name is required"],
       trim: true
     },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true
+    },
     section: {
       type: String,
       required: [true, "Student section is required"],
@@ -39,6 +44,19 @@ const studentSchema = new mongoose.Schema(
       type: Number,
       required: true,
       default: 0
+    },
+    total: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    review: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: []
+    },
+    mistakes: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: []
     }
   },
   {

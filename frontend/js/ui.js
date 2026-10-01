@@ -47,13 +47,33 @@ const UI = {
   choiceLetter(index) {
     return String.fromCharCode(65 + index);
   },
+  setupAccountHeader(includeSubject) {
+    const session = Store.get();
+    const label = UI.qs("#student-label");
+    const logoutButton = UI.qs("#logout-btn");
+    if (label) {
+      label.textContent = includeSubject && session.subjectId
+        ? (session.name || "Student") + " | " + UI.subjectName(session.subjectId)
+        : (session.name || "Student");
+    }
+    if (logoutButton) {
+      logoutButton.addEventListener("click", () => {
+        if (!window.confirm("Are you sure you want to log out?")) return;
+        Store.clear();
+        window.location.replace("login.html");
+      });
+    }
+  },
   requireSession(keys) {
     // Redirects back to the start of the flow if required session data
     // is missing (e.g. someone opens exam.html directly).
     const session = Store.get();
     const missing = keys.some((k) => !session[k]);
     if (missing) {
-      window.location.href = "home.html";
+      const accountFields = ["authenticated", "name", "accountEmail", "block"];
+      const accountIsIncomplete = session.authenticated !== true ||
+        accountFields.some((field) => !session[field]);
+      window.location.href = accountIsIncomplete ? "login.html" : "home.html";
       return null;
     }
     return session;

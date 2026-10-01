@@ -7,7 +7,7 @@
  * Set MOCK_MODE to false once a real backend is running.
  */
 const CONFIG = {
-  API_BASE: "http://localhost:4000",
+  API_BASE: window.location.origin,
   MOCK_MODE: false,
 
   /**
@@ -22,21 +22,24 @@ const CONFIG = {
       code: "CCINCOML",
       name: "Introduction to Computing",
       professor: "Prof. Renee Claudette V. Pelagio",
-      durations: { quiz: 15, midterms: 75, finals: 75 }
-    },
-    {
-      id: "ctprfiss",
-      code: "CTPRFISS",
-      name: "Social and Professional Issues",
-      professor: "Prof. Eliseo Q. Ramirez",
-      durations: { quiz: 30, midterms: 120, finals: 120 }
+      durations: { quiz: 15, midterms: 75, finals: 75 },
+      itemCounts: { quiz: 15, midterms: 30, finals: 30 }
     },
     {
       id: "ccsfen1l",
       code: "CCSFEN1L",
       name: "Software Engineering 1",
       professor: "Prof. Elsie V. Isip",
-      durations: { quiz: 30, midterms: 90, finals: 90 }
+      durations: { quiz: 30, midterms: 90, finals: 90 },
+      itemCounts: { quiz: 30, midterms: 75, finals: 75 }
+    },
+    {
+      id: "ctprfiss",
+      code: "CTPRFISS",
+      name: "Social and Professional Issues",
+      professor: "Prof. Eliseo Q. Ramirez",
+      durations: { quiz: 30, midterms: 120, finals: 120 },
+      itemCounts: { quiz: 10, midterms: 100, finals: 100 }
     }
   ],
 

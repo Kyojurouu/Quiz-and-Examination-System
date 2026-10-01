@@ -16,11 +16,19 @@ function requiredText(value, field, minLength, maxLength) {
 }
 
 function validateLogin(body = {}) {
-  return {
+  const result = {
     name: requiredText(body.name, "Name", 2, 100),
     section: requiredText(body.section || body.block, "Section", 1, 40),
     subjectId: QuestionService.normalizeSubjectId(body.subjectId)
   };
+  if (body.email !== undefined) {
+    const email = requiredText(body.email, "Email", 5, 160).toLowerCase();
+    if (!/^[^\s@]+@students\.national-u\.edu\.ph$/i.test(email)) {
+      throw new InputError("A National University student email is required.");
+    }
+    result.email = email;
+  }
+  return result;
 }
 
 function validateQuestionRequest(query = {}) {
@@ -37,11 +45,16 @@ function validateSubmission(body = {}) {
   }
   const subject = QuestionService.normalizeSubjectId(body.subject || body.subjectId);
   const examType = QuestionService.normalizeExamType(body.examType || body.examTypeId);
+  const email = requiredText(body.email, "Email", 5, 160).toLowerCase();
+  if (!/^[^\s@]+@students\.national-u\.edu\.ph$/i.test(email)) {
+    throw new InputError("A National University student email is required.");
+  }
   const answers = Array.isArray(body.answers) ? body.answers : [];
 
   return {
     studentId,
     name: requiredText(body.name, "Name", 2, 100),
+    email,
     section: requiredText(body.section || body.block, "Section", 1, 40),
     subject,
     examType,

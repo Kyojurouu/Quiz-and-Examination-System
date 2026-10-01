@@ -8,6 +8,7 @@ const { setupEvaluationRules, deduceEvaluation } = require("../logic/rules");
 // In-memory student store fallback
 const fallbackStudentStore = [];
 const resultReviewStore = new Map();
+const completedAttemptKeys = new Set();
 
 class ExamService {
   /**
@@ -15,7 +16,7 @@ class ExamService {
    * stores the record in MongoDB Atlas (LogicalSystem.students),
    * and returns the deduced score and review.
    */
-  static async evaluateAndSave({ name, section, subject, examType, answers, studentId }) {
+  static async evaluateAndSave({ name, email, section, subject, examType, answers, studentId }) {
     // Validate the submitted hard-coded question IDs and choices before
     // asserting them as facts in the knowledge base.
     const questions = QuestionService.validateSubmittedQuestions(subject, examType, answers);
@@ -32,15 +33,35 @@ class ExamService {
 
     // 5. Deduce Evaluation via Backward-Chaining Resolution (Pure Logic Paradigm)
     const evaluation = deduceEvaluation(kb, studentId, questions);
+    const identity = String(email || studentId || name).trim().toLowerCase();
+    const attemptKey = [identity, subject, examType].join(":");
+    if (completedAttemptKeys.has(attemptKey)) {
+      const error = new Error("This exam has already been completed.");
+      error.code = "ATTEMPT_COMPLETED";
+      throw error;
+    }
+
+    if (isDbConnected() && email) {
+      const existingAttempt = await Student.findOne({ email, subject, examType });
+      if (existingAttempt) {
+        const error = new Error("This exam has already been completed.");
+        error.code = "ATTEMPT_COMPLETED";
+        throw error;
+      }
+    }
 
     // 6. Persist Student Document to MongoDB Atlas
     // Target Database: LogicalSystem | Target Collection: students
     const studentData = {
       name: name || "Student",
+      email: email ? String(email).trim().toLowerCase() : undefined,
       section: section || "N/A",
       subject: subject || "General",
       examType: examType || "quiz",
-      score: evaluation.score
+      score: evaluation.score,
+      total: evaluation.total,
+      review: evaluation.review,
+      mistakes: evaluation.mistakes
     };
 
     let savedStudent = null;
@@ -69,6 +90,7 @@ class ExamService {
       review: evaluation.review,
       total: evaluation.total
     });
+    completedAttemptKeys.add(attemptKey);
 
     return {
       completed: evaluation.completed,
@@ -99,8 +121,72 @@ class ExamService {
   static async getResultById(id) {
     const student = await this.getStudentById(id);
     if (!student) return null;
-    const review = resultReviewStore.get(String(id)) || { mistakes: [], review: [], total: null };
+    const review = resultReviewStore.get(String(id)) || {
+      mistakes: student.mistakes || [],
+      review: student.review || [],
+      total: student.total || null
+    };
     return { student, ...review };
+  }
+
+  static async getCompletedExamsByEmail(email) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail) return [];
+    const completed = [];
+    if (isDbConnected()) {
+      const records = await Student.find({ email: normalizedEmail }).lean();
+      records.forEach((record) => completed.push(record.subject + ":" + record.examType));
+    }
+    fallbackStudentStore.forEach((record) => {
+      if (String(record.email || "").toLowerCase() === normalizedEmail) {
+        completed.push(record.subject + ":" + record.examType);
+      }
+    });
+    return [...new Set(completed)];
+  }
+
+  static async getCompletedScoresByEmail(email) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail) return {};
+    const scores = {};
+    const addRecord = (record) => {
+      scores[record.subject + ":" + record.examType] = {
+        score: record.score,
+        total: record.total || null
+      };
+    };
+    if (isDbConnected()) {
+      const records = await Student.find({ email: normalizedEmail }).lean();
+      records.forEach(addRecord);
+    }
+    fallbackStudentStore.forEach((record) => {
+      if (String(record.email || "").toLowerCase() === normalizedEmail) addRecord(record);
+    });
+    return scores;
+  }
+
+  static async getCompletedResultsByEmail(email) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail) return {};
+    const results = {};
+    const addRecord = (record) => {
+      const key = record.subject + ":" + record.examType;
+      results[key] = {
+        resultId: String(record._id),
+        score: record.score,
+        total: record.total || null,
+        review: record.review || [],
+        mistakes: record.mistakes || []
+      };
+    };
+    if (isDbConnected()) {
+      const records = await Student.find({ email: normalizedEmail }).lean();
+      records.forEach(addRecord);
+    }
+    fallbackStudentStore.forEach((record) => {
+      if (String(record.email || "").toLowerCase() === normalizedEmail) addRecord(record);
+    });
+    return results;
   }
 }
 

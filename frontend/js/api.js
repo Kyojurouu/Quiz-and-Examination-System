@@ -27,6 +27,7 @@ const API = {
     const session = typeof Store !== "undefined" ? Store.get() : {};
     const fullPayload = {
       name: session.name || payload.name,
+      email: session.accountEmail || payload.email,
       section: session.block || payload.section || payload.block,
       block: session.block || payload.block,
       ...payload
@@ -71,13 +72,49 @@ const API = {
   },
 
   async downloadResultPdf(resultId) {
-    // In production this hits the backend, which calls
-    // shared/pdf/generateReport.js and streams a PDF back.
+    const openReport = (html) => {
+      const reportDocument = new DOMParser().parseFromString(html, "text/html");
+      reportDocument.body.removeAttribute("onload");
+      reportDocument.querySelectorAll("script").forEach((script) => script.remove());
+      const reportUrl = URL.createObjectURL(new Blob([
+        "<!DOCTYPE html>\n",
+        reportDocument.documentElement.outerHTML
+      ], { type: "text/html" }));
+      const reportWindow = window.open(reportUrl, "_blank");
+      if (reportWindow) {
+        window.setTimeout(() => URL.revokeObjectURL(reportUrl), 60000);
+      } else {
+        URL.revokeObjectURL(reportUrl);
+      }
+    };
+
     if (CONFIG.MOCK_MODE) {
-      window.print();
+      const printableDocument = document.documentElement.cloneNode(true);
+      printableDocument.querySelectorAll("script").forEach((script) => script.remove());
+      openReport(printableDocument.outerHTML);
       return { ok: true, mocked: true };
     }
-    window.open(CONFIG.API_BASE + "/results/" + resultId + "/pdf", "_blank");
+    const session = typeof Store !== "undefined" ? Store.get() : {};
+    const resolvedResultId = resultId || session.resultId || session.result?.studentId;
+    if (!resolvedResultId) {
+      throw new Error("Result ID is missing.");
+    }
+    const response = await fetch(
+      CONFIG.API_BASE + "/results/" + encodeURIComponent(resolvedResultId) + "/pdf",
+      { cache: "no-store" }
+    );
+    if (!response.ok) {
+      throw new Error("Unable to generate the result report.");
+    }
+    const pdfBlob = await response.blob();
+    const downloadUrl = URL.createObjectURL(pdfBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = "national-university-score-report.pdf";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 60000);
     return { ok: true };
   },
 

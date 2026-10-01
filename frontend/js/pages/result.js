@@ -1,6 +1,7 @@
 (function () {
   const session = UI.requireSession(["name", "block", "subjectId", "examTypeId", "result"]);
   if (!session) return;
+  UI.setupAccountHeader();
 
   const result = session.result;
   UI.qs("#score-value").textContent = result.score + "/" + result.total;
@@ -26,8 +27,25 @@
     reviewList.appendChild(item);
   });
 
-  UI.qs("#pdf-btn").addEventListener("click", () => API.downloadResultPdf(session.resultId));
+  UI.qs("#pdf-btn").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      await API.downloadResultPdf(session.resultId);
+    } catch (error) {
+      console.error("[Result PDF Error]", error);
+    } finally {
+      button.disabled = false;
+    }
+  });
   UI.qs("#home-btn").addEventListener("click", () => {
-    Store.clear();
+    Store.set({
+      subjectId: null,
+      examTypeId: null,
+      studentId: null,
+      result: null,
+      resultId: null
+    });
+    window.location.href = "home.html";
   });
 })();

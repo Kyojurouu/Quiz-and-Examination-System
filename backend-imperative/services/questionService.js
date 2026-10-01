@@ -606,4 +606,22 @@ function getQuestionsForClient(subjectId, examTypeId) {
   return clientQuestions;
 }
 
-module.exports = { getQuestionsForClient, getQuestionsWithAnswers };
+function getExamConfig(subjectId, examTypeId) {
+  const questions = getQuestionsWithAnswers(subjectId, examTypeId);
+  const durations = {
+    ccincoml: { quiz: 15, midterms: 75, finals: 75 },
+    ccsfen1l: { quiz: 30, midterms: 90, finals: 90 },
+    ctprfiss: { quiz: 30, midterms: 120, finals: 120 }
+  };
+  const normalizedSubject = String(subjectId || "").toLowerCase();
+  const normalizedExamType = String(examTypeId || "").toLowerCase();
+  return {
+    subjectId: normalizedSubject,
+    examType: normalizedExamType,
+    itemCount: questions.length,
+    durationMinutes: durations[normalizedSubject]?.[normalizedExamType] || 30,
+    randomize: true
+  };
+}
+
+module.exports = { getQuestionsForClient, getQuestionsWithAnswers, getExamConfig };

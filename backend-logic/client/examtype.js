@@ -2,21 +2,19 @@
   const session = UI.requireSession(["subjectId", "name", "block"]);
   if (!session) return;
 
-  function clearCompletedAfterRefresh() {
-    const navigationEntry = performance.getEntriesByType("navigation")[0];
-    const wasReloaded = navigationEntry
-      ? navigationEntry.type === "reload"
-      : performance.navigation && performance.navigation.type === 1;
-    if (!wasReloaded) return;
-
-    const current = Store.get();
-    delete current.completedExams;
-    sessionStorage.setItem("nu-exam-session", JSON.stringify(current));
-  }
-
   function isCompleted(subjectId, examTypeId) {
     const completedExams = Store.get().completedExams;
     return Array.isArray(completedExams) && completedExams.includes(subjectId + ":" + examTypeId);
+  }
+
+  function completedScore(subjectId, examTypeId) {
+    const scores = Store.get().completedScores || {};
+    return scores[subjectId + ":" + examTypeId];
+  }
+
+  function completedResult(subjectId, examTypeId) {
+    const results = Store.get().completedResults || {};
+    return results[subjectId + ":" + examTypeId];
   }
 
   async function getExamConfig(subjectId, examTypeId) {
@@ -36,11 +34,10 @@
     document.head.appendChild(style);
   }
 
-  clearCompletedAfterRefresh();
   addCompletionStyles();
-  UI.qs("#student-label").textContent = session.name + " | " + UI.subjectName(session.subjectId);
+  UI.setupAccountHeader(true);
   UI.qs("#back-btn").addEventListener("click", () => {
-    window.location.href = "details.html";
+    window.location.href = "home.html";
   });
 
   const list = UI.qs("#examtype-list");
@@ -58,21 +55,33 @@
   examTypes.forEach((examType) => {
     const available = UI.isWithinWindow(examType.opensAt, examType.closesAt);
     const completed = isCompleted(session.subjectId, examType.id);
+    const score = completedScore(session.subjectId, examType.id);
+    const savedResult = completedResult(session.subjectId, examType.id);
     const enabled = available && !completed;
     const button = document.createElement("button");
     button.type = "button";
     button.className = "tile-card" + (completed ? " is-completed" : (available ? "" : " is-locked"));
-    button.disabled = !enabled;
+    button.disabled = !available && !completed;
     const duration = examType.durationMinutes === 60 ? "1 hour" : examType.durationMinutes + " minutes";
     const itemCount = examType.itemCount ? examType.itemCount + " items - " : "";
+    const completedLabel = score ? "Completed - " + score.score + "/" + score.total : "Completed";
     button.innerHTML =
       '<span class="tile-title">' + examType.name + '</span>' +
       '<span class="tile-desc"><span>' + itemCount + duration + '</span><span class="tile-window">Open: ' + UI.formatDateTime(examType.opensAt) + '<br>Close: ' + UI.formatDateTime(examType.closesAt) + '</span></span>' +
-      '<span class="tile-footer"><span class="pill ' + (completed ? "is-completed" : (available ? "" : "is-locked")) + '">' + (completed ? "Completed" : (available ? "Available" : "Locked")) + '</span>' + (enabled ? arrow : "") + '</span>';
+      '<span class="tile-footer"><span class="pill ' + (completed ? "is-completed" : (available ? "" : "is-locked")) + '">' + (completed ? completedLabel : (available ? "Available" : "Locked")) + '</span>' + (enabled ? arrow : "") + '</span>';
     if (enabled) {
       button.addEventListener("click", () => {
         Store.set({ examTypeId: examType.id });
         window.location.href = "exam.html";
+      });
+    } else if (completed && savedResult) {
+      button.addEventListener("click", () => {
+        Store.set({
+          examTypeId: examType.id,
+          result: savedResult,
+          resultId: savedResult.resultId
+        });
+        window.location.href = "result.html";
       });
     }
     list.appendChild(button);

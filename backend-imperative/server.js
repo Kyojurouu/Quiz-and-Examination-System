@@ -36,7 +36,7 @@ app.get("/api/info", (req, res) => {
 app.get("/", (req, res) => {
   // Browsers receive the shared frontend; API clients receive server metadata.
   if (req.accepts("html")) {
-    return res.sendFile(path.join(frontendPath, "home.html"));
+    return res.sendFile(path.join(frontendPath, "login.html"));
   }
 
   return res.json({

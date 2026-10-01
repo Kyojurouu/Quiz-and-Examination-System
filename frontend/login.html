@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Login | National University Quiz &amp; Examination System</title>
+<link rel="icon" href="assets/nu-logo.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-page">
+<div class="page">
+  <header class="brand-bar">
+    <span class="brand-link">
+      <img class="brand-mark" src="assets/nu-logo.png" alt="National University crest" />
+      <span class="brand-name">National University<small>Quiz &amp; Examination System</small></span>
+    </span>
+  </header>
+
+  <main class="content login-content">
+      <section class="login-card">
+        <div class="split-form-inner">
+          <p class="hero-kicker"><span class="rule-mark"></span>National University</p>
+          <h1>Student Login</h1>
+          <p class="lede">Access your quiz and examination system.</p>
+          <form id="login-form" novalidate>
+            <div class="field" id="email-field">
+              <label for="email">Student email</label>
+              <input type="email" id="email" name="email" placeholder="student@students.national-u.edu.ph" autocomplete="username" />
+              <div class="field-error">Use an email ending in @students.national-u.edu.ph.</div>
+            </div>
+
+            <div class="field password-field" id="password-field">
+              <label for="password">Password</label>
+              <div class="password-control">
+                <input type="password" id="password" name="password" autocomplete="current-password" />
+                <button type="button" class="password-toggle" id="password-toggle" aria-label="Show password" title="Show password">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5.5 9.5-5.5 9.5 5.5 9.5 5.5-3.5 5.5-9.5 5.5S2.5 12 2.5 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>
+                </button>
+              </div>
+              <div class="field-error">Use at least 8 characters with uppercase, lowercase, a number, and a special symbol.</div>
+            </div>
+
+            <div class="form-divider"><span>Student information</span></div>
+
+            <div class="field" id="name-field">
+              <label for="name">Full name</label>
+              <input type="text" id="name" name="name" placeholder="First Name, Middle Name, Last Name" autocomplete="name" />
+              <div class="field-error">Enter your full name using letters and spaces.</div>
+            </div>
+
+            <div class="field" id="block-field">
+              <label for="block">Block</label>
+              <select id="block" name="block">
+                <option value="" selected disabled>Select your block</option>
+                <option value="COM231">COM231</option>
+                <option value="COM232">COM232</option>
+              </select>
+              <div class="field-error">Select COM231 or COM232 to continue.</div>
+            </div>
+
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">Log in</button>
+            </div>
+          </form>
+        </div>
+      </section>
+  </main>
+
+  <footer class="page-footer">
+    <div class="footer-line">National University &middot; Quiz &amp; Examination System</div>
+  </footer>
+</div>
+
+<script src="js/store.js"></script>
+<script src="js/pages/account-login.js"></script>
+</body>
+</html>
