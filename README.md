@@ -7,42 +7,6 @@ A quiz and examination platform with one shared frontend and two independently i
 
 Both backends use the same MongoDB database and `students` collection. This allows the two programming paradigms to be compared using the same working application.
 
-## Features
-
-- Login using a National University student email ending in `@students.national-u.edu.ph`.
-- Password validation requiring at least 8 characters, uppercase, lowercase, a number, and a special symbol.
-- Password visibility eye button.
-- Full-name and block collection during login.
-- Block choices limited to `COM231` and `COM232`.
-- Subject selection.
-- Minimal subject icons: code brackets, settings cog, and balance scale.
-- Quiz, Midterms, and Finals assessment types.
-- Three configured subjects in the same order on both backends:
-  - **CCINCOML** - Introduction to Computing
-  - **CCSFEN1L** - Software Engineering 1
-  - **CTPRFISS** - Social and Professional Issues
-- Subject-specific exam durations and item counts.
-- Professor-informed question banks and assessment sizes.
-- Question randomization using Fisher-Yates shuffle.
-- Multiple-choice answer evaluation.
-- Circular exam progress markers arranged in five columns per row.
-- Exam submission and score calculation.
-- Complete answer review showing submitted and correct answers.
-- Color-coded correct and incorrect result cards.
-- Exam completion tracking by student email, subject, and exam type.
-- Completed exam cards retain the score, such as `Completed - 4/10`, and open the saved result report instead of reopening the exam.
-- Professional PDF-style result report with the application palette.
-- Automatic PDF download from the result page.
-- The `CCSFEN1L` subject card uses a clean settings icon instead of a letter emblem.
-- Responsive layouts for desktop, laptop, tablet, and mobile screens.
-- Shared National University building background using `frontend/assets/nu-background.png`.
-- Shared blue, teal, gold, and off-white visual palette.
-- Health-check endpoints.
-- Backend information endpoints.
-- Shared MongoDB database configuration.
-- In-memory fallback storage when MongoDB is unavailable.
-- Automated tests for imperative scoring and logic inference.
-
 ## Project Structure
 
 ```text
@@ -51,7 +15,6 @@ Quiz-and-Examination-System/
 |-- frontend/                         # Shared application frontend
 |   |-- login.html                    # Login, identity, and block selection
 |   |-- home.html                     # Subject selection
-|   |-- details.html                  # Legacy compatibility page
 |   |-- examtype.html                 # Quiz, Midterms, and Finals selection
 |   |-- exam.html                     # Question-by-question exam screen
 |   |-- result.html                   # Score, review, and report actions
@@ -115,9 +78,9 @@ Quiz-and-Examination-System/
 
 1. Start one of the backend servers.
 2. Open the backend root URL. The root opens `login.html`.
-3. Enter a full name.
-4. Enter a student email ending in `@students.national-u.edu.ph`.
-5. Enter a password with the required security rules. Use the eye button to show or hide it.
+3. Enter a student email ending in `@students.national-u.edu.ph`.
+4. Enter a password with the required security rules. Use the eye button to show or hide it.
+5. Enter a full name.
 6. Select block `COM231` or `COM232`.
 7. Select a subject.
 8. Select an available assessment type.
@@ -239,7 +202,7 @@ http://localhost:4000
 Open the application at:
 
 ```text
-http://localhost:4000/
+http://localhost:4000/login.html
 ```
 
 The imperative backend evaluates examinations using explicit loops, conditional branches, mutable variables, and array updates.
@@ -262,7 +225,7 @@ http://localhost:5000
 Open the application at:
 
 ```text
-http://localhost:5000/
+http://localhost:5000/login.html
 ```
 
 The logic backend evaluates examinations using facts, rules, unification, and backward-chaining resolution.
