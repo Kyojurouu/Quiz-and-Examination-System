@@ -1,6 +1,8 @@
 const QuestionService = require("../services/questionService");
 const { InputError } = QuestionService;
 
+const VALID_SECTIONS = ["COM231", "COM232"];
+
 function requiredText(value, field, minLength, maxLength) {
   if (typeof value !== "string") {
     throw new InputError(`${field} is required.`);
@@ -15,10 +17,19 @@ function requiredText(value, field, minLength, maxLength) {
   return normalized;
 }
 
+function validateSection(value) {
+  const text = requiredText(value, "Section", 1, 40);
+  const upper = text.toUpperCase();
+  if (!VALID_SECTIONS.includes(upper)) {
+    throw new InputError(`Section must be one of: ${VALID_SECTIONS.join(", ")}.`);
+  }
+  return upper;
+}
+
 function validateLogin(body = {}) {
   const result = {
     name: requiredText(body.name, "Name", 2, 100),
-    section: requiredText(body.section || body.block, "Section", 1, 40),
+    section: validateSection(body.section || body.block),
     subjectId: QuestionService.normalizeSubjectId(body.subjectId)
   };
   if (body.email !== undefined) {
@@ -55,7 +66,7 @@ function validateSubmission(body = {}) {
     studentId,
     name: requiredText(body.name, "Name", 2, 100),
     email,
-    section: requiredText(body.section || body.block, "Section", 1, 40),
+    section: validateSection(body.section || body.block),
     subject,
     examType,
     answers
@@ -63,7 +74,9 @@ function validateSubmission(body = {}) {
 }
 
 module.exports = {
+  VALID_SECTIONS,
   requiredText,
+  validateSection,
   validateLogin,
   validateQuestionRequest,
   validateSubmission

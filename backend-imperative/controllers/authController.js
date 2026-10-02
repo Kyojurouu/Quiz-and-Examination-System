@@ -1,5 +1,7 @@
 const ExamService = require("../services/examService");
 
+const VALID_SECTIONS = ["COM231", "COM232"];
+
 // Validate the student's admission details and create an attempt identifier.
 async function login(req, res) {
   const { name, email, block, section, subjectId } = req.body;
@@ -11,6 +13,12 @@ async function login(req, res) {
     return res.status(400).json({
       ok: false,
       error: "Name and Section (Block) are required."
+    });
+  }
+  if (!VALID_SECTIONS.includes(studentSection.toUpperCase())) {
+    return res.status(400).json({
+      ok: false,
+      error: `Section must be one of: ${VALID_SECTIONS.join(", ")}.`
     });
   }
   if (!/^[^\s@]+@students\.national-u\.edu\.ph$/i.test(email)) {
@@ -28,8 +36,8 @@ async function login(req, res) {
     completedExams,
     completedScores,
     completedResults,
-    student: { name, email: email.toLowerCase(), section: studentSection, subjectId }
+    student: { name, email: email.toLowerCase(), section: studentSection.toUpperCase(), subjectId }
   });
 }
 
-module.exports = { login };
+module.exports = { VALID_SECTIONS, login };

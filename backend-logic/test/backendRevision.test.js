@@ -5,7 +5,7 @@ const path = require("node:path");
 const QuestionService = require("../services/questionService");
 const ExamService = require("../services/examService");
 const { QUESTION_BANKS } = require("../data/hardcodedQuestionBank");
-const { validateLogin } = require("../utils/requestValidation");
+const { validateLogin, validateSubmission } = require("../utils/requestValidation");
 
 const EXPECTED_CONFIGS = {
   ccincoml: { quiz: [15, 15], midterms: [80, 75], finals: [80, 75] },
@@ -76,6 +76,32 @@ test("validates and normalizes student details", () => {
   assert.throws(
     () => validateLogin({ name: "J", block: "", subjectId: "unknown" }),
     /Name must contain/
+  );
+});
+
+test("rejects a section that is not COM231 or COM232", () => {
+  assert.throws(
+    () => validateLogin({ name: "Juan Dela Cruz", block: "COM999", subjectId: "ccincoml" }),
+    /Section must be one of/
+  );
+  assert.throws(
+    () => validateLogin({ name: "Juan Dela Cruz", block: "garbage", subjectId: "ccincoml" }),
+    /Section must be one of/
+  );
+});
+
+test("rejects an invalid section in exam submission", () => {
+  assert.throws(
+    () => validateSubmission({
+      studentId: "std-test-001",
+      name: "Juan Dela Cruz",
+      email: "juan@students.national-u.edu.ph",
+      block: "INVALID",
+      subject: "ccincoml",
+      examType: "quiz",
+      answers: []
+    }),
+    /Section must be one of/
   );
 });
 
